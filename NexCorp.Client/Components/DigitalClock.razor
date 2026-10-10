@@ -1,0 +1,97 @@
+@implements IAsyncDisposable
+
+<section class="digital-clock" aria-labelledby="@_titleId">
+    <div class="clock-panel">
+        @if (ShowDate)
+        {
+            <div class="clock-date" aria-label="@_now.ToString("dddd, d MMMM yyyy")">
+                <span class="date-day">@_now.Day</span>
+                <span class="date-month">@_now.ToString("MMMM")</span>
+                <span class="date-year">@_now.ToString("yyyy")</span>
+            </div>
+            <div class="date-rule" aria-hidden="true"></div>
+        }
+
+        <div class="clock-grid @(ShowSeconds ? string.Empty : "clock-grid--without-seconds")"
+             role="timer" aria-label="@AccessibleTime">
+            <div class="clock-unit">
+                <div class="time-card">
+                    <span class="time-value">@Hour</span>
+                    @if (!Use24HourFormat)
+                    {
+                        <span class="meridiem">@_now.ToString("tt")</span>
+                    }
+                </div>
+                <span class="unit-label">hour</span>
+            </div>
+            <div class="clock-unit">
+                <div class="time-card"><span class="time-value">@_now.ToString("mm")</span></div>
+                <span class="unit-label">minutes</span>
+            </div>
+            @if (ShowSeconds)
+            {
+                <div class="clock-unit">
+                    <div class="time-card"><span class="time-value">@_now.ToString("ss")</span></div>
+                    <span class="unit-label">seconds</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <h1 id="@_titleId" class="clock-title">@Title</h1>
+</section>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "DIGITAL CLOCK";
+
+    [Parameter]
+    public bool ShowDate { get; set; } = true;
+
+    [Parameter]
+    public bool ShowSeconds { get; set; } = true;
+
+    [Parameter]
+    public bool Use24HourFormat { get; set; }
+
+    private readonly CancellationTokenSource _lifetime = new();
+    private readonly string _titleId = $"digital-clock-title-{Guid.NewGuid():N}";
+    private DateTime _now = DateTime.Now;
+    private Task _ticker = Task.CompletedTask;
+
+    private string Hour => _now.ToString(Use24HourFormat ? "HH" : "hh");
+    private string AccessibleTime => _now.ToString(Use24HourFormat
+        ? ShowSeconds ? "dddd, d MMMM yyyy, HH:mm:ss" : "dddd, d MMMM yyyy, HH:mm"
+        : ShowSeconds ? "dddd, d MMMM yyyy, h:mm:ss tt" : "dddd, d MMMM yyyy, h:mm tt");
+
+    protected override void OnInitialized()
+    {
+        _ticker = TickAsync(_lifetime.Token);
+    }
+
+    private async Task TickAsync(CancellationToken cancellationToken)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                await InvokeAsync(() =>
+                {
+                    _now = DateTime.Now;
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _lifetime.CancelAsync();
+        await _ticker;
+        _lifetime.Dispose();
+    }
+}

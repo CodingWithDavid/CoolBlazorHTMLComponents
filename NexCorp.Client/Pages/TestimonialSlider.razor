@@ -1,0 +1,141 @@
+@page "/testimonialslider"
+@using NexCorp.Client.Components
+@implements IAsyncDisposable
+
+<PageTitle>Testimonial Slider | David's Cool Components</PageTitle>
+
+<SiteHeader />
+
+<main class="testimonial-page">
+    <div class="slider-demo">
+        <div class="page-heading">
+            <span class="eyebrow">David's Cool Components</span>
+            <h1>Testimonial Slider</h1>
+            <p>A few words from happy customers.</p>
+        </div>
+
+        <section class="testimonial-slider" aria-label="Customer testimonials" aria-roledescription="carousel">
+            <article class="testimonial-card" @key="_index" aria-roledescription="slide" aria-label="@($"Testimonial {_index + 1} of {Testimonials.Length}")">
+                <div class="portrait">
+                    @if (_photoUnavailable)
+                    {
+                        <span class="portrait-initials" aria-label="@Current.Name">@Current.Initials</span>
+                    }
+                    else
+                    {
+                        <img src="@Current.PhotoUrl" alt="@Current.Name" width="100" height="100" @onerror="PhotoFailed" />
+                    }
+                </div>
+                <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+                <blockquote>@Current.Text</blockquote>
+                <p class="customer-name">@Current.Name</p>
+                <span class="customer-label">Customer testimonial</span>
+                @if (_photoUnavailable)
+                {
+                    <p class="photo-notice">Portrait unavailable.</p>
+                }
+            </article>
+
+            <div class="slider-controls">
+                <div class="slide-selectors" aria-label="Select testimonial">
+                    @for (var i = 0; i < Testimonials.Length; i++)
+                    {
+                        var slideIndex = i;
+                        <button type="button" class="slide-dot @(i == _index ? "selected" : string.Empty)"
+                                aria-label="@($"Show testimonial {i + 1}: {Testimonials[i].Name}")"
+                                aria-current="@(i == _index ? "true" : "false")" @onclick="() => SelectSlide(slideIndex)">
+                            <span></span>
+                        </button>
+                    }
+                </div>
+                <button type="button" class="rotation-control" @onclick="ToggleRotation">
+                    <span aria-hidden="true">@(_paused ? "▶" : "Ⅱ")</span>
+                    @(_paused ? "Resume" : "Pause")
+                </button>
+            </div>
+            <p class="rotation-note">@(_paused ? "Automatic rotation paused." : "A new testimonial every 10 seconds.")</p>
+            <span class="visually-hidden" role="status">@_announcement</span>
+        </section>
+    </div>
+</main>
+
+@code {
+    private static readonly Testimonial[] Testimonials =
+    [
+        new("Cherise G", "CG",
+            "images/testimonials/cherise.jpg",
+            "This is simply unbelievable! I would be lost without Coding with David. The very best. Not able to tell you how happy I am with Coding with David."),
+        new("Rosetta Q", "RQ",
+            "images/testimonials/rosetta.jpg",
+            "I would also like to say thank you to all your staff. Wow what great service, I love it! Coding with David impressed me on multiple levels."),
+        new("Constantine V", "CV",
+            "images/testimonials/constantine.jpg",
+            "Thank you for making it painless, pleasant and most of all hassle free! I wish I would have thought of it first. The very best.")
+    ];
+
+    private readonly CancellationTokenSource _lifetime = new();
+    private Task _rotationTask = Task.CompletedTask;
+    private int _index;
+    private bool _paused, _photoUnavailable, _disposed;
+    private DateTimeOffset _nextRotation;
+    private string _announcement = string.Empty;
+    private Testimonial Current => Testimonials[_index];
+
+    protected override void OnInitialized()
+    {
+        ResetRotation();
+        _rotationTask = RotateAsync(_lifetime.Token);
+    }
+
+    private void ResetRotation() => _nextRotation = DateTimeOffset.UtcNow.AddSeconds(10);
+
+    private void SelectSlide(int index)
+    {
+        _index = index;
+        _photoUnavailable = false;
+        ResetRotation();
+        _announcement = $"Testimonial {index + 1} of {Testimonials.Length}: {Current.Name}. {Current.Text}";
+    }
+
+    private void ToggleRotation()
+    {
+        _paused = !_paused;
+        ResetRotation();
+    }
+
+    private void PhotoFailed() => _photoUnavailable = true;
+
+    private async Task RotateAsync(CancellationToken token)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(token))
+            {
+                await InvokeAsync(() =>
+                {
+                    if (!_disposed && !_paused && DateTimeOffset.UtcNow >= _nextRotation)
+                    {
+                        _index = (_index + 1) % Testimonials.Length;
+                        _photoUnavailable = false;
+                        ResetRotation();
+                        StateHasChanged();
+                    }
+                });
+            }
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        await _lifetime.CancelAsync();
+        await _rotationTask;
+        _lifetime.Dispose();
+    }
+
+    private sealed record Testimonial(string Name, string Initials, string PhotoUrl, string Text);
+}

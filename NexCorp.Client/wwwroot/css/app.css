@@ -1,0 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+    color-scheme: light;
+    font-family: 'DM Sans', sans-serif;
+    color: #172033;
+    background: #fff;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body, #app {
+    min-height: 100%;
+    margin: 0;
+}
+
+body {
+    min-width: 320px;
+    font-family: 'DM Sans', sans-serif;
+    color: #172033;
+    background: #fff;
+}
+
+button, input {
+    font: inherit;
+}
+
+button, a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible {
+    outline: 3px solid rgba(59, 130, 246, .55);
+    outline-offset: 3px;
+}
+
+::selection {
+    color: #fff;
+    background: #2563eb;
+}
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    right: 1rem;
+    bottom: 1rem;
+    padding: .8rem 1rem;
+    border: 1px solid #fecaca;
+    border-radius: .75rem;
+    color: #7f1d1d;
+    background: #fff1f2;
+    box-shadow: 0 8px 30px #0f172a20;
+}
+
+#blazor-error-ui .reload {
+    margin-left: .5rem;
+    font-weight: 700;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    margin-left: .75rem;
+}
+
+.loading-progress {
+    position: absolute;
+    display: block;
+    width: 5rem;
+    height: 5rem;
+    inset: 42vh 0 auto;
+    margin: 0 auto;
+}
+
+.loading-progress circle {
+    fill: none;
+    stroke: #dbeafe;
+    stroke-width: .45rem;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+.loading-progress circle:last-child {
+    stroke: #2563eb;
+    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * .8), 500%;
+    transition: stroke-dasharray .05s ease-in-out;
+}
+
+.loading-progress-text {
+    position: absolute;
+    inset: calc(42vh + 2.6rem) 0 auto;
+    text-align: center;
+    color: #64748b;
+    font-size: .8rem;
+}
+
+.loading-progress-text::after {
+    content: var(--blazor-load-percentage-text, 'Loading');
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}

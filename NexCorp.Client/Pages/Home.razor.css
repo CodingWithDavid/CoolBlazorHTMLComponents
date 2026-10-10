@@ -1,0 +1,49 @@
+.countdown-page {
+    position: relative;
+    display: grid;
+    min-height: calc(100svh - 76px);
+    align-content: center;
+    background: linear-gradient(110deg, #353e51, #252632);
+}
+
+@media (max-width: 720px) {
+    .countdown-page { min-height: calc(100svh - 66px); }
+}
+
+.clock-page-link {
+    position: absolute;
+    right: clamp(1rem, 4vw, 2.5rem);
+    bottom: clamp(1rem, 4vw, 2rem);
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    gap: .55rem;
+    padding: .6rem 1rem;
+    border: 1px solid #ffffff2e;
+    border-radius: 999px;
+    color: #f2f3f8;
+    background: #14182455;
+    font-size: .85rem;
+    font-weight: 600;
+    transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.clock-page-link:hover {
+    transform: translateY(-2px);
+    border-color: #ffffff70;
+    color: #fff;
+    background: #141824a8;
+}
+
+.clock-page-link span {
+    color: #79d4e8;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
