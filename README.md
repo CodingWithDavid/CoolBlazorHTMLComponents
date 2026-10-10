@@ -144,5 +144,4 @@ load/save errors explicitly. Fonts are loaded from Google Fonts; browser
 fallback fonts are used when that service is unavailable. The logo and
 testimonial portraits are served locally.
 
-Read [the companion blog post](BlogPost.md) for a conversational walkthrough
-of the demos and the process of converting raw web examples into Blazor.
+
